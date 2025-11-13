@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Attendance Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .controls {
+            padding: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .date-input {
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-present {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-absent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-late {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-pending {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Employee Attendance Tracker</h1>
+            <p id="currentDate"></p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Present</h3>
+                <div class="number" id="statPresent">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Absent</h3>
+                <div class="number" id="statAbsent">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Late</h3>
+                <div class="number" id="statLate">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Attendance Rate</h3>
+                <div class="number" id="statRate">0%</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="date" id="dateSelector" class="date-input">
+            <button class="btn btn-primary" onclick="showAddEmployeeModal()">➕ Add Employee</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Check In</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTable">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="addEmployeeModal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Employee</h2>
+            <div class="form-group">
+                <label>Employee Name</label>
+                <input type="text" id="empName" placeholder="Enter employee name">
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <input type="text" id="empDepartment" placeholder="Enter department">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeAddEmployeeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addEmployee()">Add Employee</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var employees = [
+            { id: 1, name: 'John Smith', department: 'Engineering' },
+            { id: 2, name: 'Sarah Johnson', department: 'Marketing' },
+            { id: 3, name: 'Mike Davis', department: 'Sales' },
+            { id: 4, name: 'Emily Brown', department: 'HR' },
+            { id: 5, name: 'David Wilson', department: 'Engineering' }
+        ];
+
+        var attendance = {};
+
+        function initDate() {
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateSelector').value = today;
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function getSelectedDate() {
+            return document.getElementById('dateSelector').value;
+        }
+
+        function markAttendance(employeeId, status) {
+            var date = getSelectedDate();
+            var time = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            if (!attendance[date]) {
+                attendance[date] = {};
+            }
+
+            attendance[date][employeeId] = {
+                status: status,
+                checkIn: status === 'present' || status === 'late' ? time : null
+            };
+
+            renderTable();
+            updateStats();
+        }
+
+        function getStatusBadge(status) {
+            var badges = {
+                present: '<span class="status-badge status-present">✓ Present</span>',
+                absent: '<span class="status-badge status-absent">✗ Absent</span>',
+                late: '<span class="status-badge status-late">⚠ Late</span>',
+                pending: '<span class="status-badge status-pending">⏳ Pending</span>'
+            };
+            return badges[status] || badges.pending;
+        }
+
+        function renderTable() {
+            var date = getSelectedDate();
+            var tbody = document.getElementById('attendanceTable');
+            tbody.innerHTML = '';
+
+            employees.forEach(function(emp) {
+                var record = attendance[date] && attendance[date][emp.id];
+                var status = record && record.status ? record.status : 'pending';
+                var checkIn = record && record.checkIn ? record.checkIn : '-';
+
+                var row = '<tr>' +
+                    '<td><strong>' + emp.name + '</strong></td>' +
+                    '<td>' + emp.department + '</td>' +
+                    '<td>' + getStatusBadge(status) + '</td>' +
+                    '<td>' + checkIn + '</td>' +
+                    '<td>' +
+                        '<div class="action-buttons">' +
+                            '<button class="btn btn-success" onclick="markAttendance(' + emp.id + ', \'present\')">Present</button>' +
+                            '<button class="btn btn-warning" onclick="markAttendance(' + emp.id + ', \'late\')">Late</button>' +
+                            '<button class="btn btn-danger" onclick="markAttendance(' + emp.id + ', \'absent\')">Absent</button>' +
+                        '</div>' +
+                    '</td>' +
+                '</tr>';
+                tbody.innerHTML += row;
+            });
+        }
+
+        function updateStats() {
+            var date = getSelectedDate();
+            var records = attendance[date] || {};
+            
+            var present = 0;
+            var absent = 0;
+            var late = 0;
+            
+            for (var key in records) {
+                var record = records[key];
+                if (record.status === 'present') present++;
+                else if (record.status === 'absent') absent++;
+                else if (record.status === 'late') late++;
+            }
+
+            var total = employees.length;
+            var rate = total > 0 ? (((present + late) / total) * 100).toFixed(0) : 0;
+
+            document.getElementById('statPresent').textContent = present;
+            document.getElementById('statAbsent').textContent = absent;
+            document.getElementById('statLate').textContent = late;
+            document.getElementById('statRate').textContent = rate + '%';
+        }
+
+        function showAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.add('active');
+        }
+
+        function closeAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.remove('active');
+            document.getElementById('empName').value = '';
+            document.getElementById('empDepartment').value = '';
+        }
+
+        function addEmployee() {
+            var name = document.getElementById('empName').value.trim();
+            var department = document.getElementById('empDepartment').value.trim();
+
+            if (name && department) {
+                employees.push({
+                    id: Date.now(),
+                    name: name,
+                    department: department
+                });
+                closeAddEmployeeModal();
+                renderTable();
+                updateStats();
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        document.getElementById('dateSelector').addEventListener('change', function() {
+            renderTable();
+            updateStats();
+        });
+
+        initDate();
+        renderTable();
+        updateStats();
+    </script>
+</body>
+</html>
